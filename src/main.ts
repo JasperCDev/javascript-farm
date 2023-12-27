@@ -13,10 +13,21 @@ TYPES
 /*
 GAME STATE
 */
+const plants = new Array(5).fill(null).map((_, i) => {
+  const n = i + 1;
+  const row = Math.floor(n / COLUMN_COUNT) + 1;
+  const column = n % COLUMN_COUNT;
+  return {
+    id: i.toString().padStart(2, "0"),
+    row,
+    column,
+  };
+});
+
 const tiles = new Array(TILE_COUNT).fill(null).reduce<Tiles>((acc, _, i) => {
   const n = i + 1;
-  const row = Math.floor(n / 32) + 1;
-  const column = n % 32;
+  const row = Math.floor(n / COLUMN_COUNT) + 1;
+  const column = n % COLUMN_COUNT;
   const id =
     row.toString().padStart(2, "0") + column.toString().padStart(2, "0");
   return {
@@ -25,15 +36,19 @@ const tiles = new Array(TILE_COUNT).fill(null).reduce<Tiles>((acc, _, i) => {
       id: n,
       row,
       column,
-      type: n % 2 === 0 ? "EMPTY" : "OCCUPIED",
+      type: "EMPTY",
     },
   };
 }, {});
 
 // ELEMS
 const grid = document.getElementById("grid")!;
+const plantElemTemplate = document.getElementById(
+  "plant-template"
+)! as HTMLTemplateElement;
 
 // INITIALIZE
+
 function getWidthAndHeight() {
   const widthPercent = window.innerWidth / 16000000;
   const heightPercent = window.innerHeight / 9000000;
@@ -49,30 +64,55 @@ function getWidthAndHeight() {
 }
 
 const { gridWidth, gridHeight } = getWidthAndHeight();
+let TILE_SIZE = gridHeight / ROW_COUNT;
 
 window.addEventListener("resize", () => {
   const { gridWidth, gridHeight } = getWidthAndHeight();
   grid.style.width = gridWidth + "px";
   grid.style.height = gridHeight + "px";
+  TILE_SIZE = gridHeight / ROW_COUNT;
 });
+
 grid.setAttribute(
   "style",
   `
-  --column-count: ${COLUMN_COUNT};
-  height: ${gridHeight}px;
-  width: ${gridWidth}px;
-`
+    --column-count: ${COLUMN_COUNT};
+    height: ${gridHeight}px;
+    width: ${gridWidth}px;
+    `
 );
+for (let i = 0; i < plants.length; i++) {
+  const plant = plants[i];
+  console.log(plant, TILE_SIZE);
+  const plantElem = document
+    .importNode(plantElemTemplate.content, true)
+    .querySelector("svg")!;
+  plantElem.setAttribute(
+    "style",
+    `
+        --top: ${(plant.row - 1) * TILE_SIZE}px;
+        --left: ${(plant.column - 1) * TILE_SIZE}px;
+        --tile-size: ${TILE_SIZE}px;
+      `
+  );
+  grid.appendChild(plantElem);
+  const tileId =
+    plant.row.toString().padStart(2, "0") +
+    plant.column.toString().padStart(2, "0");
+  tiles[tileId].type = "OCCUPIED";
+}
 for (let i = 0; i < TILE_COUNT; i++) {
   const n = i + 1;
-  const row = Math.floor(n / ROW_COUNT) + 1;
-  const column = n % ROW_COUNT;
+  const row = Math.floor(n / COLUMN_COUNT) + 1;
+  const column = n % COLUMN_COUNT;
   const id =
     row.toString().padStart(2, "0") + column.toString().padStart(2, "0");
-  const tile = document.createElement("div");
-  tile.id = id;
-  tile.className = "tile";
-  grid?.appendChild(tile);
+  const tile = tiles[id];
+  const tileElem = document.createElement("div");
+  tileElem.id = id;
+  tileElem.className =
+    tile.type === "OCCUPIED" ? "tile is-occupied" : "tile is-empty";
+  grid.appendChild(tileElem);
 }
 
 function game(timeStamp: number) {
@@ -115,3 +155,4 @@ type Tiles = {
     type: "OCCUPIED" | "EMPTY";
   };
 };
+console.log(TILE_COUNT, tiles);

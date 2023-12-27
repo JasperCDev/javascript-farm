@@ -44,48 +44,22 @@ body {
 }
 
 .tile {
-  border: 1px solid red;
+  border: 1px solid green;
   aspect-ratio: 1;
 }
-.time-card {
+
+.tile.is-occupied {
+  background-color: bisque;
+}
+
+.tile.is-empty {
+  background-color: aquamarine;
+}
+
+.object {
   position: absolute;
-  right: 0;
-  top: 0;
-  padding: var(--space-2);
-  border: 1px solid black;
-  border-radius: 5%;
-  height: var(--space-4);
-  background-color: var(--surface-color);
-}
-
-.toolbar {
-  position: absolute;
-  bottom: 0;
-  width: 100vw;
-}
-
-.toolbar .toolbar-items {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-
-.toolbar .toolbar-items .toolbar-item {
-  padding: var(--space-3);
-}
-
-.toolbar .toolbar-items .toolbar-item:hover {
-  outline: 1px solid red;
-}
-
-.currency-card {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: var(--space-2);
-  border: 1px solid black;
-  border-radius: 5%;
-  height: var(--space-3);
-  width: var(--space-4);
-  background-color: var(--surface-color);
+  width: var(--tile-size);
+  height: var(--tile-size);
+  top: var(--top);
+  left: var(--left);
 }
