@@ -1,0 +1,91 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100vh;
+}
+
+body {
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 32px;
+  --space-4: 64px;
+  --space-5: 128px;
+  --space-6: 256px;
+  --space-7: 512px;
+  --surface-color: lightgray;
+  background-color: black;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.grid {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  grid-template-columns: repeat(var(--column-count), auto);
+  background-color: green;
+  overflow: hidden;
+}
+
+.tile {
+  border: 1px solid red;
+  aspect-ratio: 1;
+}
+.time-card {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: var(--space-2);
+  border: 1px solid black;
+  border-radius: 5%;
+  height: var(--space-4);
+  background-color: var(--surface-color);
+}
+
+.toolbar {
+  position: absolute;
+  bottom: 0;
+  width: 100vw;
+}
+
+.toolbar .toolbar-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.toolbar .toolbar-items .toolbar-item {
+  padding: var(--space-3);
+}
+
+.toolbar .toolbar-items .toolbar-item:hover {
+  outline: 1px solid red;
+}
+
+.currency-card {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: var(--space-2);
+  border: 1px solid black;
+  border-radius: 5%;
+  height: var(--space-3);
+  width: var(--space-4);
+  background-color: var(--surface-color);
+}
