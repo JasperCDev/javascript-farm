@@ -63,3 +63,14 @@ body {
   top: var(--top);
   left: var(--left);
 }
+
+.clock {
+  position: absolute;
+  width: calc(var(--tile-size) * 2);
+  height: var(--tile-size);
+  top: var(--top);
+  left: var(--left);
+  border: 1px solid red;
+  background-color: white;
+  font-family: monospace;
+}
