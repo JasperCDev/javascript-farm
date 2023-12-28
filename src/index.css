@@ -73,4 +73,17 @@ body {
   border: 1px solid red;
   background-color: white;
   font-family: monospace;
+  color: black;
+}
+
+.currency {
+  position: absolute;
+  width: calc(var(--tile-size) * 2);
+  height: var(--tile-size);
+  top: var(--top);
+  left: var(--left);
+  border: 1px solid red;
+  background-color: white;
+  font-family: monospace;
+  color: black;
 }

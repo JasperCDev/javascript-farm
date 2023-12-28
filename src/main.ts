@@ -46,7 +46,21 @@ const objects: Objects = [
       { row: 1, column: 32 },
     ],
   },
+  {
+    id: "currency",
+    row: 18,
+    column: 31,
+    name: "currency",
+    type: "ui",
+    squares: [
+      { row: 18, column: 31 },
+      { row: 18, column: 32 },
+    ],
+  },
 ];
+
+// PLAYER STATE
+let currency = 0;
 
 // ELEMS
 const grid = document.getElementById("grid")!;
@@ -56,7 +70,11 @@ const plantElemTemplate = document.getElementById(
 const clockElemTemplate = document.getElementById(
   "clock-template"
 )! as HTMLTemplateElement;
+const currencyElemTemplate = document.getElementById(
+  "currency-template"
+)! as HTMLTemplateElement;
 let clockLabelElement: HTMLElement;
+let currencyLabelElem: HTMLElement;
 
 // INITIALIZE
 const { gridWidth, gridHeight } = getWidthAndHeight();
@@ -101,7 +119,7 @@ for (let i = 0; i < plants.length; i++) {
 for (let i = 0; i < objects.length; i++) {
   const object = objects[i];
   switch (object.name) {
-    case "clock":
+    case "clock": {
       const objectElem = document
         .importNode(clockElemTemplate.content, true)
         .querySelector(".clock")!;
@@ -114,6 +132,23 @@ for (let i = 0; i < objects.length; i++) {
       );
       grid.appendChild(objectElem);
       clockLabelElement = document.getElementById("clock-label")!;
+      break;
+    }
+    case "currency": {
+      const objectElem = document
+        .importNode(currencyElemTemplate.content, true)
+        .querySelector(".currency")!;
+      objectElem.setAttribute(
+        "style",
+        `
+          --top: ${(object.row - 1) * TILE_SIZE}px;
+          --left: ${(object.column - 1) * TILE_SIZE}px;
+        `
+      );
+      grid.appendChild(objectElem);
+      currencyLabelElem = document.getElementById("currency-label")!;
+      break;
+    }
   }
   for (let j = 0; j < object.squares.length; j++) {
     const coveredSquare = object.squares[j];
@@ -141,6 +176,11 @@ function game(timeStamp: number) {
         .toString()
         .padStart(2, "0")}${amPM}`;
     }
+  }
+
+  currency = currency + 0.01;
+  if (currencyLabelElem) {
+    currencyLabelElem.innerText = "$" + Math.floor(currency);
   }
   requestAnimationFrame(game);
 }
@@ -213,7 +253,7 @@ type Object = {
   row: number;
   column: number;
   type: "ui";
-  name: "clock";
+  name: "clock" | "currency";
   squares: Array<{ row: number; column: number }>;
 };
 type Objects = Array<Object>;
