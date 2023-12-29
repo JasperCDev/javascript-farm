@@ -1,7 +1,7 @@
 /*
 CONSTANTS
 */
-const TIME_SPEED = 50000;
+const TIME_SPEED = 500;
 const ROW_COUNT = 18;
 const COLUMN_COUNT = 32;
 const TILE_COUNT = ROW_COUNT * COLUMN_COUNT;
@@ -67,6 +67,7 @@ let prevTime: Time;
 
 // ELEMS
 const grid = document.getElementById("grid")!;
+const tintElem = document.getElementById("tint")!;
 const plantElemTemplate = document.getElementById(
   "plant-template"
 )! as HTMLTemplateElement;
@@ -80,6 +81,7 @@ let clockLabelElement: HTMLElement;
 let currencyLabelElem: HTMLElement;
 
 // INITIALIZE
+tintElem.style.setProperty("background", "#ffd500");
 const { gridWidth, gridHeight } = getWidthAndHeight();
 let TILE_SIZE = gridHeight / ROW_COUNT;
 
@@ -187,9 +189,11 @@ function game(timeStamp: number) {
   if (time.minutes % 15 === 0) {
     const h = time.hours === 0 ? 12 : time.hours;
     if (clockLabelElement) {
-      clockLabelElement.innerText = `${h}:${time.minutes
+      clockLabelElement.innerText = `${h
         .toString()
-        .padStart(2, "0")}${time.amPM}`;
+        .padStart(2, "0")}:${time.minutes.toString().padStart(2, "0")}${
+        time.amPM
+      }`;
     }
   }
   if (time.day > prevTime?.day) {
@@ -223,6 +227,21 @@ function game(timeStamp: number) {
       plants = plants.filter((p) => p.health !== 0);
     });
   }
+  const newTint = (() => {
+    let h = time.hours;
+    if (time.amPM === "PM") {
+      h += 12;
+    }
+    if (h >= 20) {
+      return "#8100a1";
+    }
+    if (h >= 16) {
+      return "#d671f0";
+    }
+
+    return "#ffc45e";
+  })();
+  tintElem.style.setProperty("background", newTint);
   prevTime = time;
   currency = currency + 0.01;
   if (currencyLabelElem) {
@@ -247,7 +266,7 @@ function getTime(ms: number): Time {
   const day = targetDate.getUTCDate();
   const hours = targetDate.getUTCHours() % 12;
   const minutes = targetDate.getUTCMinutes();
-  const amPM = hours >= 12 ? "PM" : "AM";
+  const amPM = targetDate.getUTCHours() >= 12 ? "PM" : "AM";
   return { month, day, hours, minutes, amPM };
 }
 
