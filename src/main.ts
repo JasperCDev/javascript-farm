@@ -64,6 +64,7 @@ const objects: Objects = [
 // PLAYER STATE
 let currency = 0;
 let prevTime: Time;
+let playerAction: PlayerAction = "none";
 
 // ELEMS
 const grid = document.getElementById("grid")!;
@@ -77,6 +78,7 @@ const clockElemTemplate = document.getElementById(
 const currencyElemTemplate = document.getElementById(
   "currency-template"
 )! as HTMLTemplateElement;
+let clockElem: HTMLElement;
 let clockLabelElement: HTMLElement;
 let currencyLabelElem: HTMLElement;
 
@@ -91,6 +93,30 @@ window.addEventListener("resize", () => {
   grid.style.height = gridHeight + "px";
   TILE_SIZE = gridHeight / ROW_COUNT;
   grid.style.setProperty("--tile-size", TILE_SIZE + "px");
+});
+
+grid.addEventListener("mousemove", (e) => {
+  if (playerAction !== "placing") {
+    return;
+  }
+  const x = e.clientX;
+  const y = e.clientY;
+  const relX = x - (window.innerWidth - grid.clientWidth) / 2;
+  const relY = y - (window.innerHeight - grid.clientHeight) / 2;
+  const modX = relX % TILE_SIZE;
+  const modY = relY % TILE_SIZE;
+  const snappedX = relX - modX;
+  const snappedY = relY - modY;
+  const row = Math.floor(snappedY / TILE_SIZE + 1);
+  const column = Math.floor(snappedX / TILE_SIZE + 1);
+  console.log(row, column);
+  const tileId = getTileIdFromPoint({ row, column });
+  const tile = tiles[tileId];
+  if (tile.type === "OCCUPIED") {
+    return;
+  }
+  clockElem.style.setProperty("top", snappedY + "px");
+  clockElem.style.setProperty("left", snappedX + "px");
 });
 
 grid.setAttribute(
@@ -139,7 +165,7 @@ for (let i = 0; i < objects.length; i++) {
     case "clock": {
       const objectElem = document
         .importNode(clockElemTemplate.content, true)
-        .querySelector(".clock")!;
+        .querySelector(".clock")! as HTMLElement;
       objectElem.setAttribute(
         "style",
         `
@@ -149,6 +175,7 @@ for (let i = 0; i < objects.length; i++) {
       );
       grid.appendChild(objectElem);
       clockLabelElement = document.getElementById("clock-label")!;
+      clockElem = objectElem;
       break;
     }
     case "currency": {
@@ -331,3 +358,5 @@ type Time = {
   minutes: number;
   amPM: string;
 };
+
+type PlayerAction = "placing" | "none";
