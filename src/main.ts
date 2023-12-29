@@ -1,7 +1,7 @@
 /*
 CONSTANTS
 */
-const TIME_SPEED = 500;
+const TIME_SPEED = 50000;
 const ROW_COUNT = 18;
 const COLUMN_COUNT = 32;
 const TILE_COUNT = ROW_COUNT * COLUMN_COUNT;
@@ -10,15 +10,17 @@ export const ignore = null;
 /*
 GAME STATE
 */
-const plants = new Array(5).fill(null).map<Plants[number]>((_, i) => {
+let plants = new Array(5).fill(null).map<Plants[number]>((_, i) => {
   const { row, column } = getPointFromIterator(i);
   return {
     id: i.toString().padStart(2, "0"),
     row,
     column,
     squares: [{ row, column }],
+    health: 3,
   };
 });
+let plantElems: { [id: string]: Element } = {};
 
 const tiles = new Array(TILE_COUNT).fill(null).reduce<Tiles>((acc, _, i) => {
   const { row, column } = getPointFromIterator(i);
@@ -61,6 +63,7 @@ const objects: Objects = [
 
 // PLAYER STATE
 let currency = 0;
+let prevTime: Time;
 
 // ELEMS
 const grid = document.getElementById("grid")!;
@@ -101,12 +104,23 @@ for (let i = 0; i < plants.length; i++) {
   const plant = plants[i];
   const plantElem = document
     .importNode(plantElemTemplate.content, true)
-    .querySelector("svg")!;
+    .querySelector(".object")!;
+  const stroke = (() => {
+    switch (plant.health) {
+      case 1:
+        return "#997c51";
+      case 2:
+        return "#cce841";
+      case 3:
+        return "#12cc34";
+    }
+  })();
   plantElem.setAttribute(
     "style",
     `
         --top: ${(plant.row - 1) * TILE_SIZE}px;
         --left: ${(plant.column - 1) * TILE_SIZE}px;
+        stroke: ${stroke};
       `
   );
   grid.appendChild(plantElem);
@@ -115,6 +129,7 @@ for (let i = 0; i < plants.length; i++) {
     const tileId = getTileIdFromPoint(coveredSquare);
     tiles[tileId].type = "OCCUPIED";
   }
+  plantElems[plant.id] = plantElem;
 }
 for (let i = 0; i < objects.length; i++) {
   const object = objects[i];
@@ -168,16 +183,47 @@ for (let i = 0; i < TILE_COUNT; i++) {
 }
 
 function game(timeStamp: number) {
-  const { month, day, hours, minutes, amPM } = getTime(timeStamp);
-  if (minutes % 15 === 0) {
-    const h = hours === 0 ? 12 : hours;
+  const time = getTime(timeStamp);
+  if (time.minutes % 15 === 0) {
+    const h = time.hours === 0 ? 12 : time.hours;
     if (clockLabelElement) {
-      clockLabelElement.innerText = `${h}:${minutes
+      clockLabelElement.innerText = `${h}:${time.minutes
         .toString()
-        .padStart(2, "0")}${amPM}`;
+        .padStart(2, "0")}${time.amPM}`;
     }
   }
-
+  if (time.day > prevTime?.day) {
+    plants = plants.map((p) => {
+      return { ...p, health: p.health - 1 };
+    });
+    plants.forEach((p) => {
+      const el = plantElems[p.id];
+      if (p.health === 0) {
+        el.remove();
+        return;
+      }
+      const stroke = (() => {
+        switch (p.health) {
+          case 1:
+            return "#997c51";
+          case 2:
+            return "#cce841";
+          case 3:
+            return "#12cc34";
+        }
+      })();
+      el.setAttribute(
+        "style",
+        `
+            --top: ${(p.row - 1) * TILE_SIZE}px;
+            --left: ${(p.column - 1) * TILE_SIZE}px;
+            stroke: ${stroke};
+          `
+      );
+      plants = plants.filter((p) => p.health !== 0);
+    });
+  }
+  prevTime = time;
   currency = currency + 0.01;
   if (currencyLabelElem) {
     currencyLabelElem.innerText = "$" + Math.floor(currency);
@@ -188,7 +234,7 @@ function game(timeStamp: number) {
 requestAnimationFrame(game);
 
 // UTILS
-function getTime(ms: number) {
+function getTime(ms: number): Time {
   const milliseconds = ms * TIME_SPEED;
   const baseDate = new Date(0); // January 1, 1970
   baseDate.setUTCHours(6, 0, 0, 0); // Set the time to 6:00 AM
@@ -246,6 +292,7 @@ type Plant = {
   row: number;
   column: number;
   squares: Array<{ row: number; column: number }>;
+  health: number;
 };
 type Plants = Array<Plant>;
 type Object = {
@@ -257,3 +304,11 @@ type Object = {
   squares: Array<{ row: number; column: number }>;
 };
 type Objects = Array<Object>;
+
+type Time = {
+  month: string;
+  day: number;
+  hours: number;
+  minutes: number;
+  amPM: string;
+};
