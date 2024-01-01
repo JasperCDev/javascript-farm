@@ -59,12 +59,24 @@ const objects: Objects = [
       { row: 18, column: 32 },
     ],
   },
+  {
+    id: "shop",
+    row: 1,
+    column: 31,
+    name: "shop",
+    type: "ui",
+    squares: [
+      { row: 18, column: 31 },
+      { row: 18, column: 32 },
+    ],
+  },
 ];
 
 // PLAYER STATE
 let currency = 0;
 let prevTime: Time;
 let playerAction: PlayerAction = "none";
+let isRaining = false;
 
 // ELEMS
 const grid = document.getElementById("grid")!;
@@ -211,9 +223,11 @@ for (let i = 0; i < TILE_COUNT; i++) {
   grid.appendChild(tileElem);
 }
 
+let prev: Time;
 function game(timeStamp: number) {
   const time = getTime(timeStamp);
-  if (time.minutes % 15 === 0) {
+  if (time.minutes % 15 === 0 && prev?.minutes !== time.minutes) {
+    prev = time;
     const h = time.hours === 0 ? 12 : time.hours;
     if (clockLabelElement) {
       clockLabelElement.innerText = `${h
@@ -222,10 +236,28 @@ function game(timeStamp: number) {
         time.amPM
       }`;
     }
+
+    let rainProbability = 0.2;
+    if (time.amPM === "PM") {
+      rainProbability += 0.2;
+    }
+    if (isRaining) {
+      rainProbability += 0.7;
+    }
+    if (Math.random() <= rainProbability) {
+      isRaining = true;
+    } else {
+      isRaining = false;
+    }
   }
-  if (time.day > prevTime?.day) {
+  if (time.hours > prevTime?.hours) {
     plants = plants.map((p) => {
-      return { ...p, health: p.health - 1 };
+      let health = p.health;
+      if (!isRaining) {
+        health -= 1;
+      }
+
+      return { ...p, health };
     });
     plants.forEach((p) => {
       const el = plantElems[p.id];
@@ -234,14 +266,13 @@ function game(timeStamp: number) {
         return;
       }
       const stroke = (() => {
-        switch (p.health) {
-          case 1:
-            return "#997c51";
-          case 2:
-            return "#cce841";
-          case 3:
-            return "#12cc34";
+        if (p.health >= 2.5) {
+          return "#12cc34";
         }
+        if (p.health >= 1.5) {
+          return "#cce841";
+        }
+        return "#997c51";
       })();
       el.setAttribute(
         "style",
@@ -254,6 +285,16 @@ function game(timeStamp: number) {
       plants = plants.filter((p) => p.health !== 0);
     });
   }
+  if (isRaining) {
+    console.log("raining");
+    plants = plants.map((p) => ({
+      ...p,
+      health: Math.min(p.health + 0.01, 3),
+    }));
+  } else {
+    console.log("not raining");
+  }
+
   const newTint = (() => {
     let h = time.hours;
     if (time.amPM === "PM") {
@@ -346,7 +387,7 @@ type Object = {
   row: number;
   column: number;
   type: "ui";
-  name: "clock" | "currency";
+  name: "clock" | "currency" | "shop";
   squares: Array<{ row: number; column: number }>;
 };
 type Objects = Array<Object>;
