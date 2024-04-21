@@ -75,7 +75,7 @@ const objects: Objects = [
 // PLAYER STATE
 let currency = 0;
 let prevTime: Time;
-let playerAction: PlayerAction = "none";
+let playerAction: PlayerAction = "none" as PlayerAction;
 let isRaining = false;
 
 // ELEMS
@@ -100,6 +100,7 @@ const { gridWidth, gridHeight } = getWidthAndHeight();
 let TILE_SIZE = gridHeight / ROW_COUNT;
 
 window.addEventListener("resize", () => {
+  console.log("resize");
   const { gridWidth, gridHeight } = getWidthAndHeight();
   grid.style.width = gridWidth + "px";
   grid.style.height = gridHeight + "px";
@@ -121,7 +122,6 @@ grid.addEventListener("mousemove", (e) => {
   const snappedY = relY - modY;
   const row = Math.floor(snappedY / TILE_SIZE + 1);
   const column = Math.floor(snappedX / TILE_SIZE + 1);
-  console.log(row, column);
   const tileId = getTileIdFromPoint({ row, column });
   const tile = tiles[tileId];
   if (tile.type === "OCCUPIED") {
@@ -144,7 +144,7 @@ for (let i = 0; i < plants.length; i++) {
   const plant = plants[i];
   const plantElem = document
     .importNode(plantElemTemplate.content, true)
-    .querySelector(".object")!;
+    .querySelector(".plant")!;
   const stroke = (() => {
     switch (plant.health) {
       case 1:
@@ -160,6 +160,10 @@ for (let i = 0; i < plants.length; i++) {
     `
         --top: ${(plant.row - 1) * TILE_SIZE}px;
         --left: ${(plant.column - 1) * TILE_SIZE}px;
+        width: var(--tile-size);
+        height: var(--tile-size);
+        top: var(--top);
+        left: var(--left);
         stroke: ${stroke};
       `
   );
@@ -183,6 +187,10 @@ for (let i = 0; i < objects.length; i++) {
         `
           --top: ${(object.row - 1) * TILE_SIZE}px;
           --left: ${(object.column - 1) * TILE_SIZE}px;
+          width: calc(var(--tile-size) * 2);
+          height: var(--tile-size);
+          top: var(--top);
+          left: var(--left);
         `
       );
       grid.appendChild(objectElem);
@@ -199,6 +207,10 @@ for (let i = 0; i < objects.length; i++) {
         `
           --top: ${(object.row - 1) * TILE_SIZE}px;
           --left: ${(object.column - 1) * TILE_SIZE}px;
+          width: calc(var(--tile-size) * 2);
+          height: var(--tile-size);
+          top: var(--top);
+          left: var(--left);
         `
       );
       grid.appendChild(objectElem);
@@ -225,6 +237,7 @@ for (let i = 0; i < TILE_COUNT; i++) {
 
 let prev: Time;
 function game(timeStamp: number) {
+  console.log(TILE_SIZE);
   const time = getTime(timeStamp);
   if (time.minutes % 15 === 0 && prev?.minutes !== time.minutes) {
     prev = time;
@@ -237,12 +250,12 @@ function game(timeStamp: number) {
       }`;
     }
 
-    let rainProbability = 0.2;
+    let rainProbability = 0.1;
     if (time.amPM === "PM") {
       rainProbability += 0.2;
     }
     if (isRaining) {
-      rainProbability += 0.7;
+      rainProbability += 0.5;
     }
     if (Math.random() <= rainProbability) {
       isRaining = true;
@@ -279,6 +292,10 @@ function game(timeStamp: number) {
         `
             --top: ${(p.row - 1) * TILE_SIZE}px;
             --left: ${(p.column - 1) * TILE_SIZE}px;
+            width: var(--tile-size);
+            height: var(--tile-size);
+            top: var(--top);
+            left: var(--left);
             stroke: ${stroke};
           `
       );
@@ -286,13 +303,11 @@ function game(timeStamp: number) {
     });
   }
   if (isRaining) {
-    console.log("raining");
     plants = plants.map((p) => ({
       ...p,
       health: Math.min(p.health + 0.01, 3),
     }));
   } else {
-    console.log("not raining");
   }
 
   const newTint = (() => {

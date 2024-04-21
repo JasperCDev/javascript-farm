@@ -66,20 +66,12 @@ body {
   background-color: aquamarine;
 }
 
-.object {
+.plant {
   position: absolute;
-  width: var(--tile-size);
-  height: var(--tile-size);
-  top: var(--top);
-  left: var(--left);
 }
 
 .clock {
   position: absolute;
-  width: calc(var(--tile-size) * 2);
-  height: var(--tile-size);
-  top: var(--top);
-  left: var(--left);
   border: 1px solid red;
   background-color: white;
   font-family: monospace;
@@ -88,13 +80,13 @@ body {
 
 .currency {
   position: absolute;
-  width: calc(var(--tile-size) * 2);
-  height: var(--tile-size);
-  top: var(--top);
-  left: var(--left);
   border: 1px solid red;
   background-color: white;
   font-family: monospace;
   color: black;
   font-size: 100%;
+}
+
+#currency-label {
+  font-size: 2rem;
 }
