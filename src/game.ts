@@ -1,13 +1,40 @@
 import { COLUMN_COUNT, ROW_COUNT, TILE_COUNT } from "./constants";
-import {
-  getPointFromIterator,
-  getTileIdFromPoint,
-  getWidthAndHeight,
-} from "./utils";
 
 class Plant {
-  constructor() {}
-  render() {}
+  id: string;
+  row: number;
+  column: number;
+  health: number = 3;
+  static idHelper: number;
+  elem: HTMLElement;
+  constructor(row: number, column: number) {
+    console.log("plant");
+    Plant.idHelper++;
+    this.row = row;
+    this.column = column;
+    this.id = `${this.row}${this.column}${Plant.idHelper}`;
+    const temp = document.getElementById(
+      "plant-template"
+    )! as HTMLTemplateElement;
+    this.elem = document
+      .importNode(temp.content, true)
+      .querySelector(".plant")!;
+    GameGrid.elem.append(this.elem);
+  }
+  render() {
+    this.elem.setAttribute(
+      "style",
+      `
+          --top: ${(this.row - 1) * GameGrid.tileSize}px;
+          --left: ${(this.column - 1) * GameGrid.tileSize}px;
+          width: var(--tile-size);
+          height: var(--tile-size);
+          top: var(--top);
+          left: var(--left);
+          stroke: #12cc34;
+        `
+    );
+  }
 }
 
 class Tile {
@@ -15,17 +42,19 @@ class Tile {
   column: number;
   id: string;
   elem: HTMLElement;
-  type: "OCCUPIED" | "EMPTY";
+  type: "OCCUPIED" | "EMPTY" = "EMPTY";
   constructor(tileIndex: number) {
     console.log("tile");
-    const { row, column } = getPointFromIterator(tileIndex);
-    const id = getTileIdFromPoint({ row, column });
-    this.row = row;
-    this.column = column;
+    const tilePoint = GameGrid.getPointFromIterator(tileIndex);
+    const id = GameGrid.getTileIdFromPoint(tilePoint);
+    this.row = tilePoint.row;
+    this.column = tilePoint.column;
     this.id = id;
-    this.type = Math.floor(Math.random() * 2) === 1 ? "EMPTY" : "OCCUPIED";
     this.elem = document.createElement("div");
     this.elem.id = id;
+    if (tileIndex === 0) {
+      this.type = "OCCUPIED";
+    }
     this.elem.className =
       this.type === "OCCUPIED" ? "tile is-occupied" : "tile is-empty";
     GameGrid.elem.appendChild(this.elem);
@@ -36,6 +65,7 @@ class Tile {
 
 class GameGrid {
   tiles: Tile[];
+  plants: Plant[];
   static tileSize: number;
   static elem: HTMLElement;
   static width: number;
@@ -53,11 +83,27 @@ class GameGrid {
     tint.className = "tint";
     tint.style.setProperty("background", "#ffd500");
     GameGrid.elem.append(tint);
-    this.tiles = new Array(TILE_COUNT).fill(null).map((_, i) => new Tile(i));
     window.addEventListener("resize", () => this.calcGridSize());
+
+    this.plants = [new Plant(1, 1)];
+    this.tiles = new Array(TILE_COUNT).fill(null).map((_, i) => new Tile(i));
   }
 
-  calcGridSize() {
+  static getPointFromIterator(i: number) {
+    const n = i + 1;
+    const row = Math.ceil(n / COLUMN_COUNT);
+    const column = n % COLUMN_COUNT || COLUMN_COUNT;
+    return { row, column };
+  }
+
+  static getTileIdFromPoint(point: { row: number; column: number }) {
+    return (
+      point.row.toString().padStart(2, "0") +
+      point.column.toString().padStart(2, "0")
+    );
+  }
+
+  private calcGridSize() {
     const widthPercent = window.innerWidth / 16000000;
     const heightPercent = window.innerHeight / 9000000;
     const smallestPercent = Math.min(widthPercent, heightPercent);
@@ -78,6 +124,9 @@ class GameGrid {
         --tile-size: ${GameGrid.tileSize}px;
         `
     );
+    for (const plant of this.plants) {
+      plant.render();
+    }
     for (const tile of this.tiles) {
       tile.render();
     }
